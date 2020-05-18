@@ -5,20 +5,21 @@ const uri = "mongodb+srv://crud_user:TepSmATBHI2CpVV3@ftzoymaher-lwcen.mongodb.n
 const client = new mongoclient(uri, {useNewUrlParser: true, useUnifiedTopology: true});
 
 function getCollection() {
-  return client.connect()
-    .then(result => {
-      console.log(chalk.blue("Conectado"));
-	  return result.db("ORT").collection("Alumnos");
-    })
-    .catch(error => {
-      console.log(chalk.red("Conexión fallida: ", error));
-      return null;
-    });
+	return new Promise((resolve) => {
+		resolve(client.connect()
+			.then(result => {
+				console.log(chalk.blue("Conectado"));
+				collection = result.db("ORT").collection("Alumnos");
+			})
+			.catch(error => {
+				console.log(chalk.red("Conexión fallida: ", error));				
+			})
+	})
 }
 
 function create(alumno){
     return new Promise((resolve) => {
-        resolve(collection.insertOne(alumno, (error, result) => {
+        resolve(collection.insertOne(alumno, function(error, result) => {
             if(error){
 				console.log(chalk.red("Create fallido"));				
             }
@@ -30,7 +31,7 @@ function create(alumno){
 }
 
 function read(dni){
-	new Promise((resolve) => {
+	return new Promise((resolve) => {
 		resolve(collection.findOne({"dni" : dni }, function(error, result) {
 			if (error) {
 				console.log(chalk.red("Read fallido"));				
@@ -42,7 +43,7 @@ function read(dni){
 }
 
 function update(dni){
-	new Promise ((resolve) => {
+	return new Promise ((resolve) => {
 		const query = { "dni": dni };
 		const newData = { $set: {nombre: "nombre_updated", apellido: "apellido_updated" } };
 		resolve(collection.updateOne(query, newData, function(err, result) {
@@ -57,7 +58,7 @@ function update(dni){
 }
 
 function ddelete(dni){
-	new Promise ((resolve) => {
+	return new Promise ((resolve) => {
 		const query = { "dni": dni };
 		resolve(collection.deleteOne(query, function(err, result) {
 				if (err) {
@@ -70,21 +71,31 @@ function ddelete(dni){
 }
 
 let collection;
-async function init(){
-	collection = await getCollection();
-	create(alumno);
-	read(alumno.dni);
-	update(alumno.dni);
-	read(alumno.dni);
-	ddelete(alumno.dni);
-	read(alumno.dni);
-}
-
 const alumno = {
 	"nombre" : "Guillermo",
 	"apellido" : "Rojas",
 	"dni" : 45895654
 }
-
-init();
-
+getCollection();
+	.then( () => {
+		create(alumno);
+	})
+	.then( () => {
+		read(alumno.dni);
+	})
+	.then( () => {
+		update(alumno.dni);
+	})
+	.then( () => {
+		read(alumno.dni);
+	})
+	.then( () => {
+		ddelete(alumno.dni);
+	})
+	.then( () => {
+		read(alumno.dni);
+	})
+	.catch(error => {
+		console.log(error);
+	});
+client.close(); 
