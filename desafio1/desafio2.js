@@ -14,12 +14,13 @@ function getCollection() {
 			.catch(error => {
 				console.log(chalk.red("Conexión fallida: ", error));				
 			})
+		)
 	})
 }
 
 function create(alumno){
     return new Promise((resolve) => {
-        resolve(collection.insertOne(alumno, function(error, result) => {
+        resolve(collection.insertOne(alumno, function(error, result) {
             if(error){
 				console.log(chalk.red("Create fallido"));				
             }
@@ -76,7 +77,7 @@ const alumno = {
 	"apellido" : "Rojas",
 	"dni" : 45895654
 }
-getCollection();
+getCollection()
 	.then( () => {
 		create(alumno);
 	})
